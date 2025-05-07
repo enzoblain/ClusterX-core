@@ -13,7 +13,7 @@ pub fn parse_message(message: &str) -> Option<Candle> {
     let open_time = kline["t"].as_i64()?;
     let close_time = kline["T"].as_i64()?;
     let symbol = kline["s"].as_str()?.to_string();
-    let interval = kline["i"].as_str()?.to_string();
+    let timerange = kline["i"].as_str()?.to_string();
     let open = kline["o"].as_str()?.parse::<f64>().ok()?;
     let price = kline["c"].as_str()?.parse::<f64>().ok()?;
     let high = kline["h"].as_str()?.parse::<f64>().ok()?;
@@ -26,7 +26,7 @@ pub fn parse_message(message: &str) -> Option<Candle> {
         open_time,
         close_time,
         symbol,
-        interval,
+        timerange,
         open,
         close: 0.0, // Because the close is the actual price
         high,

@@ -23,9 +23,9 @@ pub async fn load_last_candles(symbols: Vec<String>) {
     }
 
     // Prepare the SQL query to fetch the last candles for the given symbols
-    // Interval of 1m because we are using 1m candles (binance) 
+    // Timerange of 1m because we are using 1m candles (binance) 
     // This should change depending on the provider
-    let query = "SELECT DISTINCT ON (symbol) * FROM candles WHERE symbol = ANY($1) AND interval = '1m' ORDER BY symbol, open_time DESC";
+    let query = "SELECT DISTINCT ON (symbol) * FROM candles WHERE symbol = ANY($1) AND timerange = '1m' ORDER BY symbol, open_time DESC";
     let symbols: Vec<&str> = symbols.iter().map(|s| s.as_str()).collect();
     let rows = client.query(query, &[&symbols]).await.expect("Failed to fetch last candles");
 
@@ -71,7 +71,7 @@ pub async fn add_candle(candle: &Candle) {
     let usdt_volume = candle.volume * candle.close;
 
     // Prepare the SQL query to insert the candle into the database
-    let query = "INSERT INTO candles (symbol, interval, open_time, close_time, open, high, low, close, volume, usdt_volume) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) ON CONFLICT (symbol, interval, open_time) DO UPDATE SET high = EXCLUDED.high, low = EXCLUDED.low, close = EXCLUDED.close, volume = EXCLUDED.volume, usdt_volume = EXCLUDED.usdt_volume;";
-    client.execute(query, &[&candle.symbol, &candle.interval, &open_time, &close_time, &candle.open, &candle.high, &candle.low, &candle.price, &candle.volume, &usdt_volume]).await.expect("Failed to insert candle into the database");
+    let query = "INSERT INTO candles (symbol, timerange, open_time, close_time, open, high, low, close, volume, usdt_volume) VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) ON CONFLICT (symbol, timerange, open_time) DO UPDATE SET high = EXCLUDED.high, low = EXCLUDED.low, close = EXCLUDED.close, volume = EXCLUDED.volume, usdt_volume = EXCLUDED.usdt_volume;";
+    client.execute(query, &[&candle.symbol, &candle.timerange, &open_time, &close_time, &candle.open, &candle.high, &candle.low, &candle.price, &candle.volume, &usdt_volume]).await.expect("Failed to insert candle into the database");
 
 }
