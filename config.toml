@@ -1,0 +1,7 @@
+[stream]
+provider = "Binance"
+url= "wss://stream.binance.com:9443/ws/"
+type = "kline_1m"
+
+[params]
+symbols = ["BTCUSDT", "ETHUSDT"]
