@@ -1,5 +1,5 @@
 use common::DB_CLIENT;
-use crate::handler::candle::CANDLES;
+use crate::handler::candle::{CANDLES, CandleOrValue};
 
 use chrono::{DateTime, Utc};
 use common::{Candle, TIMERANGES};
@@ -26,12 +26,17 @@ pub async fn load_last_candles(symbols: Vec<String>) {
     // and the symbols
     // Iterate over the symbols and create a hashmap for each symbol
     // Then create a hashmap for each timerange in the symbol
+    // Add also volume entries to have a live volume
     let mut new_entries = HashMap::new();
     for symbol in &symbols {
-        let map = timeranges
+        let mut map = timeranges
             .iter()
-            .map(|t| (t.clone(), Candle::default()))
+            .map(|t| (t.clone(), CandleOrValue::Candle(Candle::default())))
             .collect::<HashMap<_, _>>();
+
+        map.insert("volume".to_string(), CandleOrValue::Value(0.0));
+        map.insert("usdt_volume".to_string(), CandleOrValue::Value(0.0));
+
         new_entries.insert(symbol.clone(), map);
     }
 
@@ -57,7 +62,7 @@ pub async fn load_last_candles(symbols: Vec<String>) {
 
         // If the candle is in the hashmap, update it
         // Other wise we just ignore it
-        if let Some(candle) = new_entries.get_mut(&symbol).and_then(|m| m.get_mut(&timerange)) {
+        if  let Some(CandleOrValue::Candle(candle)) = new_entries.get_mut(&symbol) .and_then(|m| m.get_mut(&timerange)) {
             candle.open_time = open_time_unix;
             candle.close_time = close_time_unix;
             candle.open = open;
