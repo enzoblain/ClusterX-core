@@ -19,6 +19,7 @@ pub fn parse_message(message: &str) -> Option<Candle> {
     let high = kline["h"].as_str()?.parse::<f64>().ok()?;
     let low = kline["l"].as_str()?.parse::<f64>().ok()?;
     let volume = kline["v"].as_str()?.parse::<f64>().ok()?;
+    let usdt_volume = volume * price;
 
     // Create a Candle object with the extracted data
     // and return it
@@ -28,10 +29,11 @@ pub fn parse_message(message: &str) -> Option<Candle> {
         symbol,
         timerange,
         open,
-        close: 0.0, // Because the close is the actual price
+        close: None, // Because the close is the actual price
         high,
         low,
         price: price.into(),
         volume,
+        usdt_volume
     })
 }
