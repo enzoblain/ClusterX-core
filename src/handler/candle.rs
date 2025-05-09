@@ -90,13 +90,11 @@ pub async fn proceed_data(new_candle: Candle) {
                     // If the timerange is 1m, we need to update the volume and usdt volume
                     // So we know what we have to add to each candle
                     volume_to_add = new_candle.volume - previous_volume;
-                    usdt_volume_to_add = new_candle.usdt_volume - previous_usdt_volume;
-                    
-                } else {
-                    // Else we just update the volume and usdt volume
-                    last_candle.volume += volume_to_add;
-                    last_candle.usdt_volume += usdt_volume_to_add;
+                    usdt_volume_to_add = new_candle.usdt_volume - previous_usdt_volume;                    
                 }
+
+                last_candle.volume += volume_to_add;
+                last_candle.usdt_volume += usdt_volume_to_add;
             } else {
                 // If the candle is not the same as the past one
                 // We just create a new candle, and send the old one to the db
@@ -108,15 +106,6 @@ pub async fn proceed_data(new_candle: Candle) {
                     // The close time is the open time of the new candle
                     last_candle.close = Some(new_candle.open);
                 }
-
-                // Send the last candle to the websocket
-                send_candle(&last_candle).await;
-
-                // Send the last candle to the db
-                add_candle(&last_candle.clone()).await;
-
-                // Update the last candle with the new one
-                *last_candle = new_candle.clone();
                 
                 if timerange == "1m" {
                     // If there is a new candle, we reset the volume and usdt volume
@@ -126,6 +115,20 @@ pub async fn proceed_data(new_candle: Candle) {
                     previous_volume = 0.0;
                     previous_usdt_volume = 0.0;
                 }
+
+                // Update the volume and usdt volume
+                last_candle.volume = volume_to_add;
+                last_candle.usdt_volume = usdt_volume_to_add;
+
+                // Send the last candle to the websocket
+                send_candle(&last_candle).await;
+
+                // Send the last candle to the db
+                add_candle(&last_candle.clone()).await;
+
+                // Update the last candle with the new one
+                *last_candle = new_candle.clone();
+
                 // Set the open time and close time
                 // Respecting the timerange
                 last_candle.timerange = timerange.clone();
